@@ -14,6 +14,7 @@ const totalPages = Math.max(1, Math.ceil(allPosts.length / pageSize));
 const posts = allPosts.slice(0, pageSize);
 const pathOf = (post: CollectionEntry<'blog'>) => post.data.slug ?? post.id.replace(/\/index$/, '');
 const base = import.meta.env.BASE_URL;
+const basePath = base.endsWith('/') ? base : `${base}/`;
 const slugifySegment = (segment = '') => {
 	const raw = String(segment).normalize('NFKC').trim();
 	const ascii = raw
@@ -30,7 +31,7 @@ const slugifyPath = (p = '') =>
 		.map(slugifySegment)
 		.join('/');
 const assetSlugOf = (post: CollectionEntry<'blog'>) => slugifyPath(pathOf(post));
-const ogOf = (post: CollectionEntry<'blog'>) => `${base}og/${assetSlugOf(post)}.png`;
+const ogOf = (post: CollectionEntry<'blog'>) => `${basePath}og/${assetSlugOf(post)}.png`;
 
 const tags = Array.from(new Set(allPosts.flatMap((post) => post.data.tags ?? []))).sort((a, b) => a.localeCompare(b));
 
@@ -61,7 +62,7 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 			</section>
 			<section class="filters" aria-label="Filters">
 				<div class="tags" id="tags">
-					<a class="tag" href={`${base}`}>All</a>
+					<a class="tag" href={`${basePath}`}>All</a>
 					{tags.map((tag) => (
 						<a class="tag" href={`?tag=${encodeURIComponent(tag)}`}>{tag}</a>
 					))}
@@ -70,13 +71,13 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 			<section class="list">
 				{posts.map((post) => (
 						<article class="card">
-							<a class="thumb" href={`${base}${encodeURI(pathOf(post))}/`}>
+							<a class="thumb" href={`${basePath}${encodeURI(pathOf(post))}/`}>
 								<img src={ogOf(post)} alt={`OGP for ${post.data.title}`} loading="lazy" />
 							</a>
 						<div class="meta">
 							<p class="date"><FormattedDate date={post.data.pubDate} /></p>
 							<h2>
-								<a href={`${base}${encodeURI(pathOf(post))}/`}>{post.data.title}</a>
+								<a href={`${basePath}${encodeURI(pathOf(post))}/`}>{post.data.title}</a>
 							</h2>
 								<p class="author">{post.data.author ?? 'Unknown'}</p>
 								<p class="desc">{post.data.description ?? ''}</p>
@@ -89,12 +90,12 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 					Page <input class="page-input" id="page-jump" type="number" min="1" max={totalPages} value="1" /> / {totalPages}
 				</span>
 				<div class="page-links">
-					{totalPages > 1 && <a class="page-link" href={`${base}page/2/`}>Next</a>}
+					{totalPages > 1 && <a class="page-link" href={`${basePath}page/2/`}>Next</a>}
 				</div>
 			</nav>
 			<nav class="pagination is-hidden" aria-label="Pagination" id="pagination-js"></nav>
 			<script type="application/json" id="post-index" set:html={postIndexJson}></script>
-			<script define:vars={{ base, pageSize, totalPages }}>
+			<script define:vars={{ base: basePath, pageSize, totalPages }}>
 				const params = new URLSearchParams(window.location.search);
 				const tag = params.get('tag');
 				const p = Math.max(1, Number(params.get('p') ?? '1') || 1);

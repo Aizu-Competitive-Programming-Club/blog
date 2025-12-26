@@ -244,17 +244,14 @@ for (const file of files) {
 
   // sharp で PNG/WebP へ
   const heroPng = await sharp(Buffer.from(svg)).png().toBuffer();
-  const heroWebp = await sharp(heroPng).webp({ quality: 90 }).toBuffer();
   const ogPng = await sharp(heroPng).resize(WIDTH, HEIGHT).png().toBuffer();
 
   const ogPath = path.join(OUTPUT_DIR_OG, `${assetSlug}.png`);
   const heroPath = path.join(OUTPUT_DIR_HERO, `${assetSlug}.png`);
-  const heroWebpPath = path.join(OUTPUT_DIR_HERO, `${assetSlug}.webp`);
   await mkdir(path.dirname(ogPath), { recursive: true });
   await mkdir(path.dirname(heroPath), { recursive: true });
   await writeFile(ogPath, ogPng);
   await writeFile(heroPath, heroPng);
-  await writeFile(heroWebpPath, heroWebp);
 }
 
 console.log(`Generated OGP for ${files.length} posts.`);

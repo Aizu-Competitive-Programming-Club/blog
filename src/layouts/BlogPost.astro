@@ -8,6 +8,7 @@ import Header from '../components/Header.astro';
 type Props = CollectionEntry<'blog'>['data'] & { slug: string };
 
 const base = import.meta.env.BASE_URL;
+const basePath = base.endsWith('/') ? base : `${base}/`;
 const {
   title,
   description = '',
@@ -36,9 +37,8 @@ const slugifyPath = (p = '') =>
     .map(slugifySegment)
     .join('/');
 const assetSlug = slugifyPath(slug);
-const fallbackOg = `${base}og/${assetSlug}.png`;
-const fallbackHero = `${base}hero/${assetSlug}.png`;
-const fallbackHeroWebp = `${base}hero/${assetSlug}.webp`;
+const fallbackOg = `${basePath}og/${assetSlug}.png`;
+const fallbackHero = `${basePath}hero/${assetSlug}.png`;
 const ogImageUrl = ogImage
   ? new URL(ogImage.src, Astro.site).toString()
   : new URL(fallbackOg, Astro.site).toString();
@@ -52,7 +52,7 @@ const slugify = (s = '') =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'author';
-const authorIconUrl = authorIcon ? authorIcon.src : `${base}icons/${slugify(authorName)}.png`;
+const authorIconUrl = authorIcon ? authorIcon.src : `${basePath}icons/${slugify(authorName)}.png`;
 ---
 
 <html lang="en">
@@ -157,10 +157,7 @@ const authorIconUrl = authorIcon ? authorIcon.src : `${base}icons/${slugify(auth
       <article>
         <div class="hero-image">
           {showGeneratedHero ? (
-            <picture>
-              <source srcset={fallbackHeroWebp} type="image/webp" />
-              <img src={fallbackHero} alt="" loading="lazy" onerror={`this.onerror=null; this.src='${fallbackOg}';`} />
-            </picture>
+            <img src={fallbackHero} alt="" loading="lazy" onerror={`this.onerror=null; this.src='${fallbackOg}';`} />
           ) : (
             heroImageUrl && <img src={heroImageUrl} alt="" loading="lazy" />
           )}

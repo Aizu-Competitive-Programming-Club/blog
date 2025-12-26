@@ -53,13 +53,37 @@ const ensureUniqueSlug = (desired, existing) => {
 	throw new Error(`Could not find unique slug for: ${desired}`);
 };
 
+const formatTokyoParts = (date = new Date()) => {
+	// Use Asia/Tokyo consistently (GitHub Actions uses UTC by default).
+	const parts = new Intl.DateTimeFormat('en-GB', {
+		timeZone: 'Asia/Tokyo',
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hour12: false,
+	}).formatToParts(date);
+	const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+	return {
+		yyyy: map.year,
+		mm: map.month,
+		dd: map.day,
+		hh: map.hour,
+		min: map.minute,
+		ss: map.second,
+	};
+};
+
 const main = async () => {
 	const title = getArg('title') ?? 'New Post';
 	const author = getArg('author') ?? 'Unknown';
 	const draft = hasFlag('publish') ? false : true;
 
 	const now = new Date();
-	const timestamp = now.toISOString().replace(/\D/g, '').slice(0, 14); // YYYYMMDDHHMMSS
+	const tokyo = formatTokyoParts(now);
+	const timestamp = `${tokyo.yyyy}${tokyo.mm}${tokyo.dd}${tokyo.hh}${tokyo.min}${tokyo.ss}`; // YYYYMMDDHHMMSS (Asia/Tokyo)
 	const id = `${timestamp}-${randomUUID().slice(0, 8)}`;
 	const postDir = path.join(POSTS_DIR, id);
 
@@ -77,7 +101,7 @@ const main = async () => {
 		slug = ensureUniqueSlug(slug, existingSlugs);
 	}
 
-	const pubDate = now.toISOString().slice(0, 10); // YYYY-MM-DD
+	const pubDate = `${tokyo.yyyy}-${tokyo.mm}-${tokyo.dd}`; // YYYY-MM-DD (Asia/Tokyo)
 
 	await mkdir(path.join(postDir, 'images'), { recursive: true });
 

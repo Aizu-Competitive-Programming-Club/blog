@@ -4,9 +4,27 @@ import type { HTMLAttributes } from 'astro/types';
 type Props = HTMLAttributes<'a'>;
 
 const { href, class: className, ...props } = Astro.props;
-const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, '');
-const subpath = pathname.match(/[^\/]+/g);
-const isActive = href === pathname || href === '/' + (subpath?.[0] || '');
+const base = import.meta.env.BASE_URL;
+const basePath = base.endsWith('/') ? base : `${base}/`;
+
+const stripBase = (p = '') => {
+	const s = String(p);
+	// Keep leading slash after stripping (e.g. '/blog/about/' -> '/about/')
+	if (s.startsWith(basePath)) return s.slice(basePath.length - 1);
+	if (s.startsWith(base)) return s.slice(base.length) || '/';
+	return s;
+};
+
+const normalize = (p = '') => {
+	const s = String(p);
+	const withLeadingSlash = s.startsWith('/') ? s : `/${s}`;
+	const trimmed = withLeadingSlash.replace(/\/+$/, '');
+	return trimmed || '/';
+};
+
+const pathname = normalize(stripBase(Astro.url.pathname));
+const target = normalize(stripBase(String(href ?? '')));
+const isActive = target === pathname;
 ---
 
 <a href={href} class:list={[className, { active: isActive }]} {...props}>
