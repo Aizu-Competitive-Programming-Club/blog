@@ -1,9 +1,12 @@
 ---
 title: 'sample-article'
 description: 'Sample article for OGP and math rendering checks.'
+tags: ["ABC"]
 author: 'sorachandu'
 pubDate: 'Dec 27 2025'
+draft: false
 ---
+
 
 Test
 
