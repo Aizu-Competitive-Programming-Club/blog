@@ -1,86 +1,202 @@
 ---
-import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<'blog'>['data'] & { slug: string };
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const {
+  title,
+  description = '',
+  pubDate,
+  updatedDate,
+  heroImage,
+  ogImage,
+  slug,
+  author,
+  authorIcon,
+}: Props = Astro.props;
+const pageUrl = new URL(Astro.url, Astro.site).toString();
+const slugifySegment = (segment = '') => {
+  const raw = String(segment).normalize('NFKC').trim();
+  const ascii = raw
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (ascii) return ascii;
+  return encodeURIComponent(raw).toLowerCase().replace(/%/g, '');
+};
+const slugifyPath = (p = '') =>
+  String(p)
+    .split('/')
+    .filter(Boolean)
+    .map(slugifySegment)
+    .join('/');
+const assetSlug = slugifyPath(slug);
+const fallbackOg = `${base}og/${assetSlug}.png`;
+const fallbackHero = `${base}hero/${assetSlug}.png`;
+const fallbackHeroWebp = `${base}hero/${assetSlug}.webp`;
+const ogImageUrl = ogImage
+  ? new URL(ogImage.src, Astro.site).toString()
+  : new URL(fallbackOg, Astro.site).toString();
+const heroImageUrl = heroImage ? heroImage.src : fallbackHero;
+const showGeneratedHero = !heroImage;
+const showAuthorBadge = Boolean(heroImage);
+const authorName = author ?? 'Unknown';
+const slugify = (s = '') =>
+  String(s)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'author';
+const authorIconUrl = authorIcon ? authorIcon.src : `${base}icons/${slugify(authorName)}.png`;
 ---
 
 <html lang="en">
-	<head>
-		<BaseHead title={title} description={description} />
-		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
-				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
-			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
-			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
-			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
-			}
-			.last-updated-on {
-				font-style: italic;
-			}
-		</style>
-	</head>
+  <head>
+    <BaseHead title={title} description={description} />
+    <style>
+      main {
+        width: calc(100% - 2em);
+        max-width: 100%;
+        margin: 0;
+      }
+      .hero-image {
+        position: relative;
+        width: 100%;
+        max-width: 780px;
+        margin: 1.25em auto;
+      }
+      .hero-image img {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: 0 auto;
+        border-radius: 12px;
+        box-shadow: var(--box-shadow);
+      }
+      .author-badge {
+        position: absolute;
+        left: 1rem;
+        bottom: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5em;
+        padding: 0.6em 0.8em;
+        border-radius: 999px;
+        backdrop-filter: blur(6px);
+        background: rgba(15, 23, 42, 0.72);
+        color: #e2e8f0;
+        box-shadow: var(--box-shadow);
+      }
+      .author-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        object-fit: cover;
+        box-shadow: var(--box-shadow);
+      }
+      .author-fallback {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.9);
+        color: #0f172a;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+      }
+      .author-fallback.is-hidden {
+        display: none;
+      }
+      .author-name {
+        font-weight: 700;
+      }
+      .prose {
+        width: 720px;
+        max-width: calc(100% - 2em);
+        margin: auto;
+        padding: 1em;
+        color: rgb(var(--gray-dark));
+      }
+      .title {
+        margin-bottom: 1em;
+        padding: 1em 0;
+        text-align: center;
+        line-height: 1;
+      }
+      .title h1 {
+        margin: 0 0 0.5em 0;
+      }
+      .date {
+        margin-bottom: 0.5em;
+        color: rgb(var(--gray));
+      }
+      .last-updated-on {
+        font-style: italic;
+      }
+    </style>
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:url" content={pageUrl} />
+    {author && <meta name="author" content={author} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+  </head>
 
-	<body>
-		<Header />
-		<main>
-			<article>
-				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<h1>{title}</h1>
-						<hr />
-					</div>
-					<slot />
-				</div>
-			</article>
-		</main>
-		<Footer />
-	</body>
+  <body>
+    <Header />
+    <main>
+      <article>
+        <div class="hero-image">
+          {showGeneratedHero ? (
+            <picture>
+              <source srcset={fallbackHeroWebp} type="image/webp" />
+              <img src={fallbackHero} alt="" loading="lazy" onerror={`this.onerror=null; this.src='${fallbackOg}';`} />
+            </picture>
+          ) : (
+            heroImageUrl && <img src={heroImageUrl} alt="" loading="lazy" />
+          )}
+          {showAuthorBadge && (
+            <div class="author-badge">
+              {authorIconUrl && (
+                <img
+                  class="author-icon"
+                  src={authorIconUrl}
+                  alt={authorName}
+                  loading="lazy"
+                  onerror="this.style.display='none'; const f=this.nextElementSibling; if (f) f.style.display='grid';"
+                />
+              )}
+              <div class={`author-fallback${authorIconUrl ? ' is-hidden' : ''}`}>
+                {authorName.slice(0, 1).toUpperCase()}
+              </div>
+              <span class="author-name">{authorName}</span>
+            </div>
+          )}
+        </div>
+        <div class="prose">
+          <div class="title">
+            <div class="date">
+              <FormattedDate date={pubDate} />
+              {updatedDate && (
+                <div class="last-updated-on">Last updated on <FormattedDate date={updatedDate} /></div>
+              )}
+            </div>
+            <h1>{title}</h1>
+            <hr />
+          </div>
+          <slot />
+        </div>
+      </article>
+    </main>
+    <Footer />
+  </body>
 </html>

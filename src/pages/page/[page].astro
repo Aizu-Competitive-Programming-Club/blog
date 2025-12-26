@@ -1,19 +1,33 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import FormattedDate from '../components/FormattedDate.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 import { getCollection, type CollectionEntry } from 'astro:content';
+
+type Props = { page: string };
 
 const pageSize = 10;
 const allPosts = (await getCollection('blog'))
 	.filter((post) => !post.data.draft)
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 const totalPages = Math.max(1, Math.ceil(allPosts.length / pageSize));
-const posts = allPosts.slice(0, pageSize);
-const pathOf = (post: CollectionEntry<'blog'>) => post.data.slug ?? post.id.replace(/\/index$/, '');
+
+export async function getStaticPaths() {
+	const pageSize = 10;
+	const allPosts = (await getCollection('blog'))
+		.filter((post) => !post.data.draft)
+		.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+	const totalPages = Math.max(1, Math.ceil(allPosts.length / pageSize));
+	return Array.from({ length: totalPages }, (_, i) => ({ params: { page: String(i + 1) } }));
+}
+
 const base = import.meta.env.BASE_URL;
+const params = Astro.params as Props;
+const currentPage = Math.max(1, Math.min(Number(params.page ?? '1') || 1, totalPages));
+const posts = allPosts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+const pathOf = (post: CollectionEntry<'blog'>) => post.data.slug ?? post.id.replace(/\/index$/, '');
 const slugifySegment = (segment = '') => {
 	const raw = String(segment).normalize('NFKC').trim();
 	const ascii = raw
@@ -33,7 +47,6 @@ const assetSlugOf = (post: CollectionEntry<'blog'>) => slugifyPath(pathOf(post))
 const ogOf = (post: CollectionEntry<'blog'>) => `${base}og/${assetSlugOf(post)}.png`;
 
 const tags = Array.from(new Set(allPosts.flatMap((post) => post.data.tags ?? []))).sort((a, b) => a.localeCompare(b));
-
 const postIndex = allPosts.map((post) => ({
 	slug: pathOf(post),
 	assetSlug: assetSlugOf(post),
@@ -69,32 +82,37 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 			</section>
 			<section class="list">
 				{posts.map((post) => (
-						<article class="card">
-							<a class="thumb" href={`${base}${encodeURI(pathOf(post))}/`}>
-								<img src={ogOf(post)} alt={`OGP for ${post.data.title}`} loading="lazy" />
-							</a>
+					<article class="card">
+						<a class="thumb" href={`${base}${encodeURI(pathOf(post))}/`}>
+							<img src={ogOf(post)} alt={`OGP for ${post.data.title}`} loading="lazy" />
+						</a>
 						<div class="meta">
 							<p class="date"><FormattedDate date={post.data.pubDate} /></p>
 							<h2>
 								<a href={`${base}${encodeURI(pathOf(post))}/`}>{post.data.title}</a>
 							</h2>
-								<p class="author">{post.data.author ?? 'Unknown'}</p>
-								<p class="desc">{post.data.description ?? ''}</p>
+							<p class="author">{post.data.author ?? 'Unknown'}</p>
+							<p class="desc">{post.data.description ?? ''}</p>
 						</div>
 					</article>
 				))}
 			</section>
 			<nav class="pagination" aria-label="Pagination" id="pagination-server">
 				<span class="page-info">
-					Page <input class="page-input" id="page-jump" type="number" min="1" max={totalPages} value="1" /> / {totalPages}
+					Page <input class="page-input" id="page-jump" type="number" min="1" max={totalPages} value={currentPage} /> / {totalPages}
 				</span>
 				<div class="page-links">
-					{totalPages > 1 && <a class="page-link" href={`${base}page/2/`}>Next</a>}
+					{currentPage > 1 && (
+						<a class="page-link" href={currentPage - 1 === 1 ? `${base}` : `${base}page/${currentPage - 1}/`}>
+							Prev
+						</a>
+					)}
+					{currentPage < totalPages && <a class="page-link" href={`${base}page/${currentPage + 1}/`}>Next</a>}
 				</div>
 			</nav>
 			<nav class="pagination is-hidden" aria-label="Pagination" id="pagination-js"></nav>
 			<script type="application/json" id="post-index" set:html={postIndexJson}></script>
-			<script define:vars={{ base, pageSize, totalPages }}>
+			<script define:vars={{ base, pageSize, totalPages, currentPage }}>
 				const params = new URLSearchParams(window.location.search);
 				const tag = params.get('tag');
 				const p = Math.max(1, Number(params.get('p') ?? '1') || 1);
@@ -102,11 +120,10 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 				const jump = document.getElementById('page-jump');
 				if (jump) {
 					jump.addEventListener('change', () => {
-						const n = Math.max(1, Math.min(Number(jump.value || '1') || 1, totalPages));
+						const n = Math.max(1, Math.min(Number(jump.value || String(currentPage)) || currentPage, totalPages));
 						window.location.href = n === 1 ? `${base}` : `${base}page/${n}/`;
 					});
 				}
-
 				if (tag) {
 					const dataEl = document.getElementById('post-index');
 					const listEl = document.querySelector('section.list');
@@ -122,7 +139,6 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 
 					if (tagsEl) {
 						tagsEl.querySelectorAll('a.tag').forEach((a) => a.classList.remove('is-active'));
-						const active = tagsEl.querySelector(`a.tag[href^="?tag="]`);
 						tagsEl.querySelectorAll('a.tag').forEach((a) => {
 							const u = new URL(a.getAttribute('href') || '', window.location.href);
 							if (u.searchParams.get('tag') === tag) a.classList.add('is-active');
@@ -315,15 +331,15 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 		pointer-events: none;
 	}
 
+	.is-hidden {
+		display: none;
+	}
+
 	.page-input {
 		width: 4.5rem;
 		padding: 0.2rem 0.4rem;
 		border-radius: 8px;
 		border: 1px solid rgb(var(--gray));
 		color: rgb(var(--gray-dark));
-	}
-
-	.is-hidden {
-		display: none;
 	}
 </style>

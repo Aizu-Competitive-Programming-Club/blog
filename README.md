@@ -50,8 +50,24 @@ All commands are run from the root of the project, from a terminal:
 | `npm run dev`             | Starts local dev server at `localhost:4321`      |
 | `npm run build`           | Build your production site to `./dist/`          |
 | `npm run preview`         | Preview your build locally, before deploying     |
+| `npm run prebuild`        | Generate OGP/hero images into `public/`          |
+| `npm run new-post -- ...` | Create a new post folder + `index.md` template   |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
+
+### New post helper
+
+Create a new post with a machine-generated id (also used as the default URL slug):
+
+```sh
+npm run new-post -- --title "My Post Title" --author "Your Name"
+```
+
+Optional: set a custom URL slug (must be unique):
+
+```sh
+npm run new-post -- --title "My Post Title" --slug "custom-slug"
+```
 
 ## 👀 Want to learn more?
 

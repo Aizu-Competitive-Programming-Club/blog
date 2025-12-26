@@ -6,13 +6,24 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "prebuild": "node scripts/gen-og.mjs",
+    "new-post": "node scripts/new-post.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.13",
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.0",
     "astro": "^5.16.6",
-    "sharp": "^0.34.3"
+    "astro-og-canvas": "^0.7.2",
+    "katex": "^0.16.27",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
+    "satori": "^0.18.3",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "fast-glob": "^3.3.3",
+    "gray-matter": "^4.0.3"
   }
 }
