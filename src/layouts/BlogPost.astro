@@ -57,7 +57,7 @@ const authorIconUrl = authorIcon ? authorIcon.src : `${basePath}icons/${slugify(
 
 <html lang="en">
   <head>
-    <BaseHead title={title} description={description} />
+    <BaseHead title={title} description={description} ogType="article" url={pageUrl} imageUrl={ogImageUrl} />
     <style>
       main {
         width: calc(100% - 2em);
@@ -139,16 +139,7 @@ const authorIconUrl = authorIcon ? authorIcon.src : `${basePath}icons/${slugify(
         font-style: italic;
       }
     </style>
-    <meta property="og:type" content="article" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImageUrl} />
-    <meta property="og:url" content={pageUrl} />
     {author && <meta name="author" content={author} />}
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImageUrl} />
   </head>
 
   <body>
