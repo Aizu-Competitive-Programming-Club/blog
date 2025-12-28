@@ -85,12 +85,10 @@ const main = async () => {
 	const tokyo = formatTokyoParts(now);
 	const timestamp = `${tokyo.yyyy}${tokyo.mm}${tokyo.dd}${tokyo.hh}${tokyo.min}${tokyo.ss}`; // YYYYMMDDHHMMSS (Asia/Tokyo)
 	const id = `${timestamp}-${randomUUID().slice(0, 8)}`;
-	const postDir = path.join(POSTS_DIR, id);
-
 	const existingSlugs = await loadExistingRouteSlugs();
 	const requestedSlug = getArg('slug');
-	// In "A" mode, default to a machine-generated slug (same as directory name)
-	// so URLs and OG/hero asset names are collision-free and stable.
+
+	// In the new layout, the filename is the canonical slug (used for URL + OG/hero asset names).
 	let slug = requestedSlug ? slugifyAscii(requestedSlug) : id;
 	if (requestedSlug) {
 		if (existingSlugs.has(slug)) {
@@ -101,14 +99,14 @@ const main = async () => {
 		slug = ensureUniqueSlug(slug, existingSlugs);
 	}
 
-	const pubDate = `${tokyo.yyyy}-${tokyo.mm}-${tokyo.dd}`; // YYYY-MM-DD (Asia/Tokyo)
+	const postFile = path.join(POSTS_DIR, `${slug}.mdx`);
 
-	await mkdir(path.join(postDir, 'images'), { recursive: true });
+	const pubDate = `${tokyo.yyyy}-${tokyo.mm}-${tokyo.dd}`; // YYYY-MM-DD (Asia/Tokyo)
+	await mkdir(POSTS_DIR, { recursive: true });
 
 	const frontmatter = [
 		'---',
 		`title: ${JSON.stringify(title)}`,
-		`slug: ${JSON.stringify(slug)}`,
 		`pubDate: ${pubDate}`,
 		`description: ""`,
 		`tags: []`,
@@ -119,20 +117,18 @@ const main = async () => {
 		'',
 	].join('\n');
 
-	await writeFile(path.join(postDir, 'index.md'), frontmatter, 'utf8');
+	await writeFile(postFile, frontmatter, 'utf8');
 
 	// eslint-disable-next-line no-console
-	console.log(`Created: ${postDir}`);
+	console.log(`Created: ${postFile}`);
 	// eslint-disable-next-line no-console
-	console.log(`- Edit: ${path.join(postDir, 'index.md')}`);
-	// eslint-disable-next-line no-console
-	console.log(`- Images: ${path.join(postDir, 'images/')}`);
+	console.log(`- Edit: ${postFile}`);
 	// eslint-disable-next-line no-console
 	console.log(`- URL: /${slug}/`);
 	// eslint-disable-next-line no-console
 	console.log('Tip: add --publish to start with draft: false');
 	// eslint-disable-next-line no-console
-	console.log('Tip: pass --slug <value> only if you want a custom URL');
+	console.log('Tip: pass --slug <value> to override the generated slug');
 };
 
 await main();

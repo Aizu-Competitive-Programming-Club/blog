@@ -1,0 +1,22 @@
+---
+type Props = {
+	id?: string;
+	url?: string;
+};
+
+const { id, url }: Props = Astro.props;
+
+const tweetUrl =
+	url ??
+	(id
+		? `https://x.com/i/web/status/${encodeURIComponent(String(id))}`
+		: undefined);
+---
+
+{tweetUrl ? (
+	<blockquote class="twitter-tweet">
+		<a href={tweetUrl}>{tweetUrl}</a>
+	</blockquote>
+) : (
+	<p role="note">Tweet embed is missing an <code>id</code> or <code>url</code>.</p>
+)

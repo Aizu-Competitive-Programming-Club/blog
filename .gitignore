@@ -3,6 +3,10 @@ dist/
 # generated types
 .astro/
 
+# build-time generated social images
+public/og/*.png
+public/hero/*.png
+
 # dependencies
 node_modules/
 
