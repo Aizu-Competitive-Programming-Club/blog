@@ -1,7 +1,7 @@
 ---
 title: 'sample-article'
 description: 'Sample article for OGP and math rendering checks.'
-tags: ["ABC"]
+tags: ["ABC","ARC"]
 author: 'sorachandu'
 pubDate: 'Dec 27 2025'
 draft: false
@@ -13,6 +13,8 @@ Test
 ## Hello World
 
 こんにちは
+
+---
 
 $O(N)$ でこの問題が解けました.
 
