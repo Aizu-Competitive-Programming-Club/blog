@@ -80,54 +80,93 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 								<a href={`${basePath}${encodeURI(pathOf(post))}/`}>{post.data.title}</a>
 							</h2>
 								<p class="author">{post.data.author ?? 'Unknown'}</p>
-								<p class="desc">{post.data.description ?? ''}</p>
+							{(post.data.tags ?? []).length > 0 && (
+								<div class="tags card-tags" aria-label="Tags">
+									{(post.data.tags ?? []).map((tag) => (
+										<a class="tag" href={`?tag=${encodeURIComponent(tag)}`}>{tag}</a>
+									))}
+								</div>
+							)}
 						</div>
 					</article>
 				))}
 			</section>
 			<nav class="pagination" aria-label="Pagination" id="pagination-server">
 				<span class="page-info">
-					Page <input class="page-input" id="page-jump" type="number" min="1" max={totalPages} value="1" /> / {totalPages}
+					Page <input class="page-input" id="page-jump" type="number" min="1" max={totalPages} value="1" /> / <span id="total-pages">{totalPages}</span>
 				</span>
 				<div class="page-links">
-					{totalPages > 1 && <a class="page-link" href={`${basePath}page/2/`}>Next</a>}
+					{totalPages > 1 && <a class="page-link" href={`?p=2`}>Next</a>}
 				</div>
 			</nav>
-			<nav class="pagination is-hidden" aria-label="Pagination" id="pagination-js"></nav>
 			<script type="application/json" id="post-index" set:html={postIndexJson}></script>
 			<script define:vars={{ base: basePath, pageSize, totalPages }}>
 				const params = new URLSearchParams(window.location.search);
 				const tag = params.get('tag');
 				const p = Math.max(1, Number(params.get('p') ?? '1') || 1);
 
+				const nav = document.getElementById('pagination-server');
+				const pageLinks = nav?.querySelector('.page-links');
+				const totalPagesEl = document.getElementById('total-pages');
+
 				const jump = document.getElementById('page-jump');
+				let currentTotalPages = totalPages;
+				let currentPage = 1;
+
+				const hrefForPage = (n) => {
+					const u = new URL(window.location.href);
+					if (tag) u.searchParams.set('tag', tag);
+					else u.searchParams.delete('tag');
+					if (n === 1) u.searchParams.delete('p');
+					else u.searchParams.set('p', String(n));
+					return `${u.pathname}${u.search}`;
+				};
+
+				const renderPagination = () => {
+					if (jump) {
+						jump.max = String(currentTotalPages);
+						jump.value = String(currentPage);
+					}
+					if (totalPagesEl) totalPagesEl.textContent = String(currentTotalPages);
+					if (!pageLinks) return;
+					const prev =
+						currentPage > 1
+							? `<a class="page-link" href="${hrefForPage(currentPage - 1)}">Prev</a>`
+							: '<span class="page-link is-disabled">Prev</span>';
+					const next =
+						currentPage < currentTotalPages
+							? `<a class="page-link" href="${hrefForPage(currentPage + 1)}">Next</a>`
+							: '<span class="page-link is-disabled">Next</span>';
+					pageLinks.innerHTML = `${prev}${next}`;
+				};
+
 				if (jump) {
 					jump.addEventListener('change', () => {
-						const n = Math.max(1, Math.min(Number(jump.value || '1') || 1, totalPages));
-						window.location.href = n === 1 ? `${base}` : `${base}page/${n}/`;
+						const max = Number(jump.max || String(currentTotalPages)) || currentTotalPages;
+						const n = Math.max(1, Math.min(Number(jump.value || '1') || 1, max));
+						window.location.href = hrefForPage(n);
 					});
 				}
 
-				if (tag) {
+				if (tag || p !== 1) {
 					const dataEl = document.getElementById('post-index');
 					const listEl = document.querySelector('section.list');
-					const navServer = document.getElementById('pagination-server');
-					const navJs = document.getElementById('pagination-js');
 					const tagsEl = document.getElementById('tags');
 
 					const all = JSON.parse(dataEl?.textContent || '[]');
-					const filtered = all.filter((post) => (post.tags || []).includes(tag));
-					const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-					const page = Math.min(p, totalPages);
-					const slice = filtered.slice((page - 1) * pageSize, page * pageSize);
+					const filtered = tag ? all.filter((post) => (post.tags || []).includes(tag)) : all;
+					currentTotalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+					currentPage = Math.min(p, currentTotalPages);
+					const slice = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
 					if (tagsEl) {
 						tagsEl.querySelectorAll('a.tag').forEach((a) => a.classList.remove('is-active'));
-						const active = tagsEl.querySelector(`a.tag[href^="?tag="]`);
-						tagsEl.querySelectorAll('a.tag').forEach((a) => {
-							const u = new URL(a.getAttribute('href') || '', window.location.href);
-							if (u.searchParams.get('tag') === tag) a.classList.add('is-active');
-						});
+						if (tag) {
+							tagsEl.querySelectorAll('a.tag').forEach((a) => {
+								const u = new URL(a.getAttribute('href') || '', window.location.href);
+								if (u.searchParams.get('tag') === tag) a.classList.add('is-active');
+							});
+						}
 					}
 
 					listEl.innerHTML = slice
@@ -141,29 +180,20 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 										<p class="date">${new Date(post.pubDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}</p>
 										<h2><a href="${base}${encodeURI(post.slug)}/">${post.title}</a></h2>
 										<p class="author">${post.author}</p>
-										<p class="desc">${post.description}</p>
+										${(post.tags || []).length ? `
+											<div class="tags card-tags" aria-label="Tags">
+												${(post.tags || [])
+													.map((t) => `<a class="tag" href="?tag=${encodeURIComponent(t)}">${t}</a>`)
+													.join('')}
+											</div>
+										` : ''}
 									</div>
 								</article>
 							`
 						)
 						.join('');
 
-					if (navServer) navServer.classList.add('is-hidden');
-					if (navJs) {
-						navJs.classList.remove('is-hidden');
-						const link = (n, label) => {
-							const u = new URL(window.location.href);
-							u.searchParams.set('tag', tag);
-							u.searchParams.set('p', String(n));
-							return `<a class="page-link" href="${u.pathname}${u.search}">${label}</a>`;
-						};
-						const prev = page > 1 ? link(page - 1, 'Prev') : '<span class="page-link is-disabled">Prev</span>';
-						const next = page < totalPages ? link(page + 1, 'Next') : '<span class="page-link is-disabled">Next</span>';
-						navJs.innerHTML = `
-							<span class="page-info">Tag: ${tag} / Page ${page} / ${totalPages}</span>
-							<div class="page-links">${prev}${next}</div>
-						`;
-					}
+					renderPagination();
 				}
 			</script>
 		</main>
@@ -171,7 +201,7 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 	</body>
 </html>
 
-<style>
+<style is:global>
 	.page {
 		max-width: 960px;
 		margin: 0 auto;
@@ -268,6 +298,10 @@ const postIndexJson = JSON.stringify(postIndex).replace(/</g, '\\u003c');
 	.desc {
 		margin: 0;
 		color: rgb(var(--gray-dark));
+	}
+
+	.card-tags {
+		margin-top: 0.4rem;
 	}
 
 	.date {
