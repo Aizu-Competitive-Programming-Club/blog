@@ -87,6 +87,7 @@ for (const file of files) {
   const assetSlug = slugifyPath(routeSlug);
   const title = data.title ?? routeSlug;
   const description = data.description ?? '';
+  const tags = Array.isArray(data.tags) ? data.tags.filter((t) => typeof t === 'string' && t.trim()) : [];
   const author = data.author ?? 'Unknown';
   const authorKey = slugify(author);
 
@@ -131,6 +132,7 @@ for (const file of files) {
         alignItems: 'center',
         gap: s(14),
         marginTop: s(28),
+        marginBottom: s(32),
         fontSize: s(28),
         color: '#cbd5e1',
       },
@@ -186,6 +188,40 @@ for (const file of files) {
     },
   };
 
+  const tagsNode =
+    tags.length > 0
+      ? {
+          type: 'div',
+          props: {
+            style: {
+              display: 'flex',
+              gap: s(12),
+              flexWrap: 'nowrap',
+              overflow: 'hidden',
+              marginBottom: s(22),
+            },
+            children: tags.map((t) => ({
+              type: 'div',
+              props: {
+                style: {
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: `${s(8)}px ${s(14)}px`,
+                  borderRadius: 9999,
+                  background: '#1e293b',
+                  border: `${s(2)}px solid #334155`,
+                  color: '#cbd5e1',
+                  fontSize: s(30),
+                  lineHeight: 1,
+                  whiteSpace: 'nowrap',
+                },
+                children: esc(t),
+              },
+            })),
+          },
+        }
+      : null;
+
   // satori で SVG を作成
   const svg = await satori(
     {
@@ -216,6 +252,7 @@ for (const file of files) {
               children: esc(title),
             },
           },
+          ...(tagsNode ? [tagsNode] : []),
           {
             type: 'div',
             props: {
