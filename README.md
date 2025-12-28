@@ -1,19 +1,6 @@
-# Astro Starter Kit: Blog
+# Blog
 
-```sh
-npm create astro@latest -- --template blog
-```
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and OpenGraph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
+Astro-based blog with MDX + KaTeX, build-time OGP/hero image generation, and a Keystatic admin UI.
 
 ## 🚀 Project Structure
 
@@ -51,7 +38,7 @@ All commands are run from the root of the project, from a terminal:
 | `npm run build`           | Build your production site to `./dist/`          |
 | `npm run preview`         | Preview your build locally, before deploying     |
 | `npm run prebuild`        | Generate OGP/hero images into `public/`          |
-| `npm run new-post -- ...` | Create a new post folder + `index.md` template   |
+| `npm run new-post -- ...` | Create a new post file template (`.mdx`)         |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 
@@ -69,10 +56,40 @@ Optional: set a custom URL slug (must be unique):
 npm run new-post -- --title "My Post Title" --slug "custom-slug"
 ```
 
-## 👀 Want to learn more?
+This creates a single file in `src/content/posts/<slug>.mdx`.
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Keystatic
+
+The admin UI is available at `/keystatic`.
+
+### Local mode (default)
+
+If you do not set Keystatic GitHub environment variables, Keystatic uses local storage mode.
+
+```sh
+npm run dev
+```
+
+Then open `http://localhost:4321/keystatic`.
+
+### GitHub mode (for Cloudflare Pages)
+
+Set these environment variables (as Cloudflare Pages Secrets in both Preview and Production):
+
+- `KEYSTATIC_GITHUB_CLIENT_ID`
+- `KEYSTATIC_GITHUB_CLIENT_SECRET`
+- `KEYSTATIC_SECRET` (32+ characters)
+- `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG`
+
+In GitHub mode, Keystatic will create branches prefixed with `keystatic/`.
+
+### Cloudflare Pages binding
+
+The Cloudflare adapter uses a KV namespace binding named `SESSION` for sessions.
+
+- Create a KV namespace
+- Bind it as `SESSION` in your Cloudflare Pages project (Preview and Production)
 
 ## Credit
 
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+This theme started from the Astro blog starter kit.

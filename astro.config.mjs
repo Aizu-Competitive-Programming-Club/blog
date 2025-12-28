@@ -1,8 +1,11 @@
 // @ts-check
 
 import mdx from '@astrojs/mdx';
+import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
+import keystatic from '@keystatic/astro';
+import cloudflare from '@astrojs/cloudflare';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
@@ -13,7 +16,8 @@ const base = process.env.ASTRO_BASE ?? '';
 export default defineConfig({
 	site,
 	base,
-	integrations: [mdx(), sitemap()],
+	adapter: cloudflare(),
+	integrations: [mdx(), react(), sitemap(), keystatic()],
 	markdown: {
 		remarkPlugins: [remarkMath],
 		rehypePlugins: [rehypeKatex],

@@ -11,12 +11,18 @@
     "new-post": "node scripts/new-post.mjs"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.12",
     "@astrojs/mdx": "^4.3.13",
+    "@astrojs/react": "^4.4.2",
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.0",
+    "@keystatic/astro": "^5.0.6",
+    "@keystatic/core": "^0.5.48",
     "astro": "^5.16.6",
     "astro-og-canvas": "^0.7.2",
     "katex": "^0.16.27",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "satori": "^0.18.3",
