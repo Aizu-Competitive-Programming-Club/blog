@@ -58,8 +58,8 @@ export default config({
 							label: 'Tweet',
 							schema: {
 								id: fields.text({
-									label: 'Tweet ID',
-									description: 'Numeric ID from the tweet URL',
+									label: 'Tweet URL or ID',
+									description: 'Paste a tweet URL (x.com/twitter.com) or the numeric tweet ID',
 								}),
 							},
 						}),
