@@ -3,7 +3,9 @@ import { block } from '@keystatic/core/content-components';
 
 const repo = 'Aizu-Competitive-Programming-Club/blog';
 
-const storage = process.env.KEYSTATIC_GITHUB_CLIENT_ID
+const env = import.meta.env;
+
+const storage = (env.KEYSTATIC_GITHUB_CLIENT_ID ?? process.env.KEYSTATIC_GITHUB_CLIENT_ID)
 	? {
 			kind: 'github' as const,
 			repo,
