@@ -3,16 +3,14 @@ import { block } from '@keystatic/core/content-components';
 
 const repo = 'Aizu-Competitive-Programming-Club/blog';
 
-const env = import.meta.env;
-
-const storage = (env.KEYSTATIC_GITHUB_CLIENT_ID ?? process.env.KEYSTATIC_GITHUB_CLIENT_ID)
+const storage = import.meta.env.DEV
 	? {
+			kind: 'local' as const,
+	  }
+	: {
 			kind: 'github' as const,
 			repo,
 			branchPrefix: 'keystatic/',
-	  }
-	: {
-			kind: 'local' as const,
 	  };
 
 export default config({
