@@ -1,10 +1,19 @@
 export default function rehypeKeystaticMathFix() {
 	return function transformer(tree) {
-		const normalize = (value) =>
+		const normalizeMath = (value) =>
 			value
 				.replace(/\\\{/g, '{')
 				.replace(/\\\}/g, '}')
 				.replace(/\\_/g, '_');
+
+		const normalizeText = (value) =>
+			value
+				// Footnotes: "\[^1]" / "\[^1]:" -> "[^1]" / "[^1]:"
+				.replace(/\\\[\^/g, '[^')
+				// Limited HTML: "\<span ...>" / "\</span>" -> "<span ...>" / "</span>"
+				.replace(/\\<span\b/gi, '<span')
+				.replace(/\\<\/(?:span)\s*>/gi, '</span>')
+				.replace(/\\<\\\/(?:span)\s*>/gi, '</span>');
 
 		const getClasses = (node) => {
 			const props = node && node.properties;
@@ -14,7 +23,7 @@ export default function rehypeKeystaticMathFix() {
 			return [];
 		};
 
-		const walk = (node, inMath = false) => {
+		const walk = (node, inMath = false, inCode = false) => {
 			if (!node || typeof node !== 'object') return;
 
 			if (node.type === 'element') {
@@ -25,15 +34,22 @@ export default function rehypeKeystaticMathFix() {
 					classes.includes('math-display') ||
 					classes.includes('language-math');
 				inMath = inMath || isMathElement;
+
+				const tag = String(node.tagName || '').toLowerCase();
+				if (tag === 'pre' || tag === 'code') inCode = true;
 			}
 
-			if (inMath && node.type === 'text' && typeof node.value === 'string') {
-				node.value = normalize(node.value);
+			if (node.type === 'text' && typeof node.value === 'string') {
+				if (inMath) {
+					node.value = normalizeMath(node.value);
+				} else if (!inCode) {
+					node.value = normalizeText(node.value);
+				}
 			}
 
 			const children = node.children;
 			if (Array.isArray(children)) {
-				for (const child of children) walk(child, inMath);
+				for (const child of children) walk(child, inMath, inCode);
 			}
 		};
 
