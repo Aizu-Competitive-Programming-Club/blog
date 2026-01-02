@@ -1,7 +1,8 @@
 import { config, fields, collection } from '@keystatic/core';
 import { block, mark } from '@keystatic/core/content-components';
+import { paletteIcon } from '@keystar/ui/icon/icons/paletteIcon';
 
-const repo = 'Aizu-Competitive-Programming-Club/blog';
+const repo = { owner: 'Aizu-Competitive-Programming-Club', name: 'blog' } as const;
 
 const storage = import.meta.env.DEV
 	? {
@@ -65,6 +66,14 @@ export default config({
 						}),
 						Color: mark({
 							label: 'Color',
+							icon: paletteIcon,
+							tag: 'span',
+							style: (props) => {
+								const custom = props.value.value?.trim();
+								const preset = props.value.preset;
+								const color = custom || (preset === 'custom' ? '' : preset);
+								return color ? { color } : {};
+							},
 							schema: {
 								preset: fields.select({
 									label: 'Preset',
