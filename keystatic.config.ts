@@ -1,5 +1,5 @@
 import { config, fields, collection } from '@keystatic/core';
-import { block } from '@keystatic/core/content-components';
+import { block, mark } from '@keystatic/core/content-components';
 
 const repo = 'Aizu-Competitive-Programming-Club/blog';
 
@@ -60,6 +60,35 @@ export default config({
 								id: fields.text({
 									label: 'Tweet URL or ID',
 									description: 'Paste a tweet URL (x.com/twitter.com) or the numeric tweet ID',
+								}),
+							},
+						}),
+						Color: mark({
+							label: 'Color',
+							schema: {
+								preset: fields.select({
+									label: 'Preset',
+									description: 'Pick a preset color, or choose Custom and set a CSS color value below.',
+									options: [
+										{ label: 'black', value: 'black' },
+										{ label: 'gray', value: 'gray' },
+										{ label: 'saddlebrown', value: 'saddlebrown' },
+										{ label: 'green', value: 'green' },
+										{ label: 'cyan', value: 'cyan' },
+										{ label: 'blue', value: 'blue' },
+										{ label: 'yellow', value: 'yellow' },
+										{ label: 'orange', value: 'orange' },
+										{ label: 'red', value: 'red' },
+										{ label: 'silver', value: 'silver' },
+										{ label: 'gold', value: 'gold' },
+										{ label: 'custom', value: 'custom' },
+									],
+									defaultValue: 'blue',
+								}),
+								value: fields.text({
+									label: 'Custom color (optional)',
+									description:
+										'Overrides the preset when set. Examples: cyan, #00ffff, rgb(0 255 255), hsl(180 100% 50%).',
 								}),
 							},
 						}),

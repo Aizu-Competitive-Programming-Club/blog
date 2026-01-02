@@ -1,0 +1,19 @@
+---
+export interface Props {
+	preset?: string;
+	value?: string;
+}
+
+const { preset, value } = Astro.props;
+const custom = typeof value === 'string' ? value.trim() : '';
+const effectiveColor = custom || (preset && preset !== 'custom' ? preset : '');
+---
+
+{effectiveColor ? (
+	<span style={`color: ${effectiveColor};`}>
+		<slot />
+	</span>
+) : (
+	<slot />
+)
+}
