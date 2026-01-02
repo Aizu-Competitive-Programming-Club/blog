@@ -23,11 +23,11 @@ const normalizeTweetUrl = (props: Props): string | undefined => {
 	const looksLikeUrl = /^(https?:\/\/|x\.com\/|twitter\.com\/)/i.test(raw);
 	if (looksLikeUrl) {
 		const tweetId = raw.match(/\/status\/(\d{10,})/i)?.[1] ?? extractTweetId(raw);
-		return tweetId ? `https://x.com/i/web/status/${tweetId}` : raw;
+		return tweetId ? `https://twitter.com/i/web/status/${tweetId}` : raw;
 	}
 
 	const tweetId = raw.match(/^\d{10,}$/) ? raw : extractTweetId(raw);
-	return tweetId ? `https://x.com/i/web/status/${tweetId}` : undefined;
+	return tweetId ? `https://twitter.com/i/web/status/${tweetId}` : undefined;
 };
 
 const tweetUrl = normalizeTweetUrl({ id, url });

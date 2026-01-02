@@ -210,6 +210,25 @@ const authorIconUrl = authorIcon ? authorIcon.src : `${basePath}icons/${slugify(
       </article>
     </main>
     <Footer />
+    <script is:inline>
+      const loadTwitterWidgets = () => {
+        const w = window;
+        if (w?.twttr?.widgets?.load) w.twttr.widgets.load();
+      };
+
+      // Call once on load, and retry briefly in case widgets.js loads later.
+      const retryLoadTwitterWidgets = () => {
+        let tries = 0;
+        const timer = setInterval(() => {
+          loadTwitterWidgets();
+          tries += 1;
+          if (tries >= 30 || window?.twttr?.widgets?.load) clearInterval(timer);
+        }, 100);
+      };
+
+      window.addEventListener('load', retryLoadTwitterWidgets);
+      document.addEventListener('astro:page-load', retryLoadTwitterWidgets);
+    </script>
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
   </body>
 </html>
