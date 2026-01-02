@@ -13,6 +13,7 @@ export default function rehypeKeystaticMathFix() {
 				// Limited HTML: "\<span ...>" / "\</span>" -> "<span ...>" / "</span>"
 				.replace(/\\<span\b/gi, '<span')
 				.replace(/\\<\/(?:span)\s*>/gi, '</span>')
+				.replace(/\\<\\span\s*>/gi, '</span>')
 				.replace(/\\<\\\/(?:span)\s*>/gi, '</span>');
 
 		const getClasses = (node) => {
