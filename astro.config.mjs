@@ -8,6 +8,7 @@ import keystatic from '@keystatic/astro';
 import cloudflare from '@astrojs/cloudflare';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import remarkKeystaticMathFix from './src/remark/keystaticMathFix';
 
 const site = process.env.ASTRO_SITE ?? 'http://localhost:4321';
 const base = process.env.ASTRO_BASE ?? '';
@@ -19,7 +20,7 @@ export default defineConfig({
 	adapter: cloudflare(),
 	integrations: [mdx(), react(), sitemap(), keystatic()],
 	markdown: {
-		remarkPlugins: [remarkMath],
+		remarkPlugins: [remarkMath, remarkKeystaticMathFix],
 		rehypePlugins: [rehypeKatex],
 	},
 });
