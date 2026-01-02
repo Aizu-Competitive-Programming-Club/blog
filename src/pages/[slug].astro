@@ -2,6 +2,7 @@
 import { type CollectionEntry, getCollection, render } from 'astro:content';
 import BlogPost from '../layouts/BlogPost.astro';
 import TweetEmbed from '../components/TweetEmbed.astro';
+import Color from '../components/Color.astro';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
@@ -18,5 +19,5 @@ const { Content } = await render(post);
 ---
 
 <BlogPost {...post.data} slug={slug}>
-	<Content components={{ Tweet: TweetEmbed }} />
+	<Content components={{ Tweet: TweetEmbed, Color }} />
 </BlogPost>
