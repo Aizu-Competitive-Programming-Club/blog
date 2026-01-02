@@ -11,7 +11,13 @@ import rehypeKatex from 'rehype-katex';
 import remarkKeystaticMathFix from './src/remark/keystaticMathFix.mjs';
 import rehypeKeystaticMathFix from './src/rehype/keystaticMathFix.mjs';
 
-const site = process.env.ASTRO_SITE ?? 'http://localhost:4321';
+// Use Cloudflare Pages-provided URLs when available so OGP meta uses a real, crawlable origin.
+// (If `site` falls back to localhost, X/Discord won't be able to fetch og:image.)
+const cloudflareSite =
+	process.env.CF_PAGES_DEPLOYMENT_URL ??
+	process.env.CF_PAGES_URL ??
+	process.env.CF_PAGES_PROJECT_URL;
+const site = process.env.ASTRO_SITE ?? cloudflareSite ?? 'http://localhost:4321';
 const base = process.env.ASTRO_BASE ?? '';
 
 // https://astro.build/config

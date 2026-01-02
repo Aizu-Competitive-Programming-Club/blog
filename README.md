@@ -62,6 +62,8 @@ This creates a single file in `src/content/posts/<slug>.mdx`.
 
 The admin UI is available at `/keystatic`.
 
+Team workflow: see [docs/keystatic-ops.md](docs/keystatic-ops.md).
+
 ### Local mode (default)
 
 If you do not set Keystatic GitHub environment variables, Keystatic uses local storage mode.
